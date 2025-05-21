@@ -1,0 +1,11 @@
+{
+    "user_input": "我想要求解如下热方程：\\frac{\\partial u}{\\partial t}=\\alpha \\frac{\\partial^2u}{\\partial x^2}\n其中，\\qquad x \\in [0, 1], \\quad t \\in [0, 1]，\\alpha=0.4\n初始条件为u(x,0) = \\sin (\\frac{n\\pi x}{L}),\\qquad 0<x<L, \\quad n = 1,2,.....\n迪利克雷边界条件为u(0,t) = u(1,t)=0\n参数L=1，n=1\n",
+    "max_loop": 10,
+    "temperature": 0.0,
+    "difficulty_level": "easy",
+    "model_info": {
+        "CHAT_MODEL": "deepseek-chat",
+        "DEEPSEEK_API_KEY": "sk-e7da98d7c23242509ece68a221e02348",
+        "DEEPSEEK_BASE_URL": "https://api.deepseek.com"
+    }
+}

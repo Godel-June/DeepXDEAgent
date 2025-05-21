@@ -1,0 +1,130 @@
+{
+    "id": "eval_data_4",
+    "problem_description": "我想求解如下扩散方程：\\frac{\\partial u}{\\partial t} = \\frac{\\partial^2u}{\\partial x^2} - e^{-t}(\\sin(\\pi x) - \\pi^2\\sin(\\pi x))\n空间范围为[-1,1]，时间范围为[0,1]\n初始条件为：u(x, 0) = \\sin(\\pi x)\n边界条件为：u(-1, t) = u(1, t) = 0.\n参考解为：u = e^{-t} \\sin(\\pi x)\n不需要使用L-BFGS优化器进行精调，仅使用Adam优化器进行训练即可",
+    "difficulty_level": "easy",
+    "has_reference_solution": true,
+    "expected_tool_chain": [
+        {
+            "step": "1",
+            "tool_name": "define_pde",
+            "parameters": {
+                "equation": "\\frac{\\partial y}{\\partial t} = \\frac{\\partial^2y}{\\partial x^2} - e^{-t}(\\sin(\\pi x) - \\pi^2\\sin(\\pi x))"
+            },
+            "return": {
+                "pde": "a function object, whicn is used to define the PDE",
+                "pde_code":"def pde(x, y):\n    dy_t = dde.grad.jacobian(y, x, i=0, j=1)  # first-order derivative of y with respect to t\n    dy_xx = dde.grad.hessian(y, x, i=0, j=0)  # second-order derivative of y with respect to x\n    x_val, t_val = x[:, 0:1], x[:, 1:2]\n    return dy_t - dy_xx + torch.exp(-t_val) * (torch.sin(torch.pi * x_val) - torch.pi**2 * torch.sin(torch.pi * x_val))"
+            }
+        },
+        {
+            "step": "2",
+            "tool_name": "define_reference_solution",
+            "parameters": {
+                "solution": "y = e^{-t} \\sin(\\pi x)"
+            },
+            "return": {
+                "ref_func": "a function object, which is used to define the reference solution",
+                "ref_code": "def ref_func(x):\n    return np.exp(-x[:, 1:2]) * np.sin(np.pi * x[:, 0:1])\n"
+            }
+        },
+        {
+            "step": "3",
+            "tool_name": "define_domain",
+            "parameters": {
+                "geom_type": "Interval",
+                "geom_range": [-1,1],
+                "is_time_dependent": true,
+                "time_range": [0,1]
+            },
+            "return": {
+                "geomtime": "a GeometryXTime object, which is used to define the domain and time"
+            }
+        },
+        {
+            "step":"4",
+            "tool_name": "define_initial_condition",
+            "parameters":{
+                "geomtime": "a GeometryXTime object at Step_3_1",
+                "ic_description": "This is a time-dependent one-dimensional PDE problem with a spatial range of [-1,1], a time range of [0, 1], and an initial condition of u(x, 0) = \\sin(\\pi x)"
+            },
+            "return": {
+                "ic":"a list of initial condition objects, which is used to define the initial condition",
+                "ic_code":"def func(X):\n    return np.sin(np.pi * X[:, 0:1])\ninitial = lambda _, on_initial: on_initial\nic1 = dde.icbc.IC(geomtime, func, initial)"
+            }
+        },
+        {
+            "step":"5",
+            "tool_name": "define_boundary_condition",
+            "parameters":{
+                "geomtime": "a GeometryXTime object at Step_3_1",
+                "bc_description": "This is a time-dependent one-dimensional PDE problem with a spatial range of [-1,1], a time range of [0, 1], and a boundary condition of u(-1,t) = u(1,t) = 0"
+            },
+            "return":{
+                "bc":"a list of boundary condition objects, which is used to define the boundary condition",
+                "bc_code":"def func(x):\n    return 0\ndef boundary_l(x, on_boundary):\n    return on_boundary and dde.utils.isclose(x[0], -1)\ndef boundary_r(x, on_boundary):\n    return on_boundary and dde.utils.isclose(x[0], 1)\nbc1 = dde.icbc.DirichletBC(geomtime, func, boundary_l)\nbc2 = dde.icbc.DirichletBC(geomtime, func, boundary_r)"
+            }
+        },
+        {
+            "step":"6",
+            "tool_name": "create_training_data",
+            "parameters":{
+                "geomtime": "a GeometryXTime object at Step_3_1",
+                "pde_func": "a function object at Step_1_1",
+                "num_domain": 1000,
+                "num_boundary": 100,
+                "num_initial": 100,
+                "num_test": 1000,
+                "bc": "a list of boundary condition objects at Step_5_1",
+                "ic": "a list of initial condition objects at Step_4_1",
+                "ref_func": "a function object at Step_2_1",
+                "is_time_dependent": true
+            },
+            "return":{
+                "data": "a dde.data.pde.TimePDE object, which is used to generate the training data for the model training"
+            }
+        },
+        {
+            "step":"7",
+            "tool_name": "create_network",
+            "parameters":{
+                "input_dim": 2,
+                "output_dim": 1,
+                "hidden_layers": [32, 32, 32]
+            },
+            "return":{
+                "net": "a deepxde.nn.pytorch.fnn.FNN object, which is used to define the neural network structure"
+            }
+        },
+        {
+            "step":"8",
+            "tool_name": "train_model",
+            "parameters":{
+                "data": "a dde.data.pde.TimePDE object at Step_5_1",
+                "net": "a deepxde.nn.pytorch.fnn.FNN object at Step_6_1",
+                "iterations": 15000,
+                "metrics": ["l2 relative error"]
+            },
+            "return":{
+                "model":"a deepxde.model.Model object, which includes the neural network and training data",
+                "losshistory": "a deepxde.model.LossHistory object, which records the training loss and testing loss",
+                "train_state": "a deepxde.model.TrainState object, which records the training state information"
+            }
+        },
+        {
+            "step":"9",
+            "tool_name": "visualize_and_save",
+            "parameters":{
+                "loss_history": "a deepxde.model.LossHistory object at Step_8_2",
+                "train_state": "a deepxde.model.TrainState object at Step_8_3",
+                "is_save": true,
+                "is_plot": true
+            },
+            "return":{
+            }
+        }
+    ],
+    "expected_results": {
+        "train_loss_threshold": 2e-4,
+        "test_loss_threshold": 2e-4,
+        "test_metric_threshold": 2e-2
+    }
+}

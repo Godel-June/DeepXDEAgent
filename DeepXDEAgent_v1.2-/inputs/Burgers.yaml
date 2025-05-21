@@ -1,0 +1,17 @@
+user_input: |
+  I would like to solve the following Burgers equation: \frac{\partial u}{\partial t} + u\frac{\partial u}{\partial x} = \nu\frac{\partial^2u}{\partial x^2}
+  Where, \nu=0.01
+  The computational geometry domain is [-1,1], and the time domain is [0,1]
+  The initial condition \quad u(x,0) = - \sin(\pi x)
+  The Dirichlet boundary condition u(-1,t)=u(1,t)=0
+  The PDE does not have analytical solution.
+max_loop: 10
+temperature: 0.0
+difficulty_level: "easy"
+model_info:
+  CHAT_MODEL: "deepseek-chat"
+  DEEPSEEK_API_KEY: "sk-e7da98d7c23242509ece68a221e02348"
+  DEEPSEEK_BASE_URL: "https://api.deepseek.com"
+
+output_dir: "logs"
+  

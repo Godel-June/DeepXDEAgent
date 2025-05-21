@@ -1,0 +1,19 @@
+difficultyprompt: |
+  Given the following differential equation:  
+  {question}  
+
+  Please evaluate the difficulty of solving it with DeepXDE based on these criteria:  
+
+  1) Easy:  
+     - The equation is linear, low-dimensional (1D/2D), and has standard boundary conditions.  
+     - Can be solved directly using default DeepXDE configurations without additional tuning.  
+
+  2) Medium:  
+     - The equation contains nonlinear terms, moderate-dimensional domains (3D), or complex boundary conditions (e.g., time-dependent, discontinuous).  
+     - Requires parameter tuning, custom loss functions, or retrieval of similar solutions (RAG) for optimization.  
+
+  3) Difficult:  
+     - The equation is high-dimensional (4D+), involves multi-physics coupling, or requires adaptive methods (e.g., PINNs with domain decomposition).  
+     - Needs collaborative workflows (e.g., multi-model integration, hybrid numerical-PINN approaches) or advanced techniques.  
+
+  Provide the difficulty level [1) Easy, 2) Medium, or 3) Difficult] and a brief justification.

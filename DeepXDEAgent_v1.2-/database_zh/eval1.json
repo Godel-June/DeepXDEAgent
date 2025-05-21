@@ -1,0 +1,129 @@
+{
+    "id": "eval_data_1",
+    "problem_description": "我想要求解如下Allen-Cahn方程：\\frac{\\partial u}{\\partial t} = d\\frac{\\partial^2u}{\\partial x^2} + 5(u - u^3), d = 0.01 \n空间x的范围为[-1, 1], 时间t的范围为[0, 1]\n初始条件为：u(x, 0) = x^2\\cos(\\pi x)\n边界条件为：u(-1, t) = u(1, t) = -1\n该方程没有解析解\n这个问题比较困难，模型的训练轮数和数据的采样数量应该设置得大一点",
+    "difficulty_level": "medium",
+    "has_reference_solution": false,
+    "expected_tool_chain": [
+        {
+            "step": "1",
+            "tool_name": "define_pde",
+            "parameters": {
+                "equation": "\\frac{\\partial u}{\\partial t} = d\\frac{\\partial^2u}{\\partial x^2} + 5(u - u^3), d = 0.01"
+            },
+            "return": {
+                "pde": "a function object, whicn is used to define the PDE",
+                "pde_code":"def pde(x, u):\n    d = 0.01\n    du_t = dde.grad.jacobian(u, x, i=0, j=1)  # first-order derivative of u with respect to t\n    du_xx = dde.grad.hessian(u, x, i=0, j=0)  # second-order derivative of u with respect to x\n    return du_t - d * du_xx - 5 * (u - u**3)"
+            }
+        },
+        {
+            "step": "2",
+            "tool_name": "define_domain",
+            "parameters": {
+                "geom_type": "Interval",
+                "geom_range": [-1,1],
+                "is_time_dependent": true,
+                "time_range": [0,1]
+            },
+            "return": {
+                "geomtime": "a GeometryXTime object, which is used to define the domain and time"
+            }
+        },
+        {
+            "step":"3",
+            "tool_name": "define_initial_condition",
+            "parameters":{
+                "geomtime": "a GeometryXTime object at Step_2_1",
+                "ic_description": "This is a time-dependent one-dimensional PDE problem with a spatial range of [-1,1], a time range of [0, 1], and an initial condition of u(x, 0) = x^2\\cos(\\pi x)"
+            },
+            "return": {
+                "ic":"a list of initial condition objects, which is used to define the initial condition",
+                "ic_code":"def func(X):\n    return X[:, 0:1]**2 * np.cos(np.pi * X[:, 0:1])\ninitial = lambda _, on_initial: on_initial\nic1 = dde.icbc.IC(geomtime, func, initial)"
+            }
+        },
+        {
+            "step":"4",
+            "tool_name": "define_boundary_condition",
+            "parameters":{
+                "geomtime": "a GeometryXTime object at Step_2_1",
+                "bc_description": "This is a time-dependent one-dimensional PDE problem with a spatial range of [-1,1], a time range of [0, 1], and a boundary condition of u(-1,t) = -1, u(1,t) = -1"
+            },
+            "return":{
+                "bc":"a list of boundary condition objects, which is used to define the boundary condition",
+                "bc_code":"def func_l(x):\n    return -1  # Constant value for left boundary\ndef func_r(x):\n    return -1  # Constant value for right boundary\ndef boundary_l(x, on_boundary):\n    return on_boundary and dde.utils.isclose(x[0], -1)\ndef boundary_r(x, on_boundary):\n    return on_boundary and dde.utils.isclose(x[0], 1)\nbc1 = dde.icbc.DirichletBC(geomtime, func_l, boundary_l)\nbc2 = dde.icbc.DirichletBC(geomtime, func_r, boundary_r)\n"
+            }
+        },
+        {
+            "step":"5",
+            "tool_name": "create_training_data",
+            "parameters":{
+                "geomtime": "a GeometryXTime object at Step_2_1",
+                "pde_func": "a function object at Step_1_1",
+                "num_domain": 8000,
+                "num_boundary": 400,
+                "num_initial": 800,
+                "bc": "a list of boundary condition objects at Step_4_1",
+                "ic": "a list of initial condition objects at Step_3_1",
+                "is_time_dependent": true
+            },
+            "return":{
+                "data": "a dde.data.pde.TimePDE object, which is used to generate the training data for the model training"
+            }
+        },
+        {
+            "step":"6",
+            "tool_name": "create_network",
+            "parameters":{
+                "input_dim": 2,
+                "output_dim": 1,
+                "hidden_layers": [20, 20, 20]
+            },
+            "return":{
+                "net": "a deepxde.nn.pytorch.fnn.FNN object, which is used to define the neural network structure"
+            }
+        },
+        {
+            "step":"7",
+            "tool_name": "train_model",
+            "parameters":{
+                "data": "a dde.data.pde.TimePDE object at Step_5_1",
+                "net": "a deepxde.nn.pytorch.fnn.FNN object at Step_6_1",
+                "iterations": 40000
+            },
+            "return":{
+                "model":"a deepxde.model.Model object, which includes the neural network and training data",
+                "losshistory": "a deepxde.model.LossHistory object, which records the training loss and testing loss",
+                "train_state": "a deepxde.model.TrainState object, which records the training state information"
+            }
+        },
+        {
+            "step":"8",
+            "tool_name": "train_model_LBFGS",
+            "parameters":{
+                "model": "a deepxde.model.Model object at Step_7_1"
+            },
+            "return":{
+                "model": "a deepxde.model.Model object, which includes the neural network and training data",
+                "losshistory": "a deepxde.model.LossHistory object, which records the training loss and testing loss",
+                "train_state": "a deepxde.model.TrainState object, which records the training state information"
+            }
+        },
+        {
+            "step":"9",
+            "tool_name": "visualize_and_save",
+            "parameters":{
+                "loss_history": "a deepxde.model.LossHistory object at Step_8_2",
+                "train_state": "a deepxde.model.TrainState object at Step_8_3",
+                "is_save": true,
+                "is_plot": true
+            },
+            "return":{
+            }
+        }
+    ],
+    "expected_results": {
+        "train_loss_threshold": 5e-3,
+        "test_loss_threshold": 5e-3
+    }
+}
+
+

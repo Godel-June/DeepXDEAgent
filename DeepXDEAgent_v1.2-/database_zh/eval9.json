@@ -1,0 +1,143 @@
+{
+    "id": "eval_data_9",
+    "problem_description": "我想要求解如下热方程：\\frac{\\partial u}{\\partial t}=\\alpha \\frac{\\partial^2u}{\\partial x^2}\n其中，空间范围x为[0, 1], 时间范围t为[0, 1]，参数\\alpha=0.4\n初始条件为u(x,0) = \\sin (\\frac{n\\pi x}{L}),\n迪利克雷边界条件为u(0,t) = u(1,t)=0\n该方程的解析解为u(x,t) = e^{\\frac{-n ^2\\pi ^2 \\alpha t}{L^2}}\\sin (\\frac{n\\pi x}{L})\n参数L=1，n=1\n请使用L-BFGS优化器",
+    "difficulty_level": "medium",
+    "has_reference_solution": true,
+    "expected_tool_chain": [
+        {
+            "step": "1",
+            "tool_name": "define_pde",
+            "parameters": {
+                "equation": "\\frac{\\partial u}{\\partial t}=\\alpha \\frac{\\partial^2u}{\\partial x^2}"
+            },
+            "return": {
+                "pde": "a function object, whicn is used to define the PDE",
+                "pde_code":"def pde(x, u):\n    alpha = 0.4\n    du_t = dde.grad.jacobian(u, x, i=0, j=1)  # first-order derivative of u with respect to t\n    du_xx = dde.grad.hessian(u, x, i=0, j=0)  # second-order derivative of u with respect to x\n    return du_t - alpha * du_xx"
+            }
+        },
+        {
+            "step": "2",
+            "tool_name": "define_reference_solution",
+            "parameters": {
+                "solution": "u(x,t) = e^{\\frac{-n ^2\\pi ^2 \\alpha t}{L^2}}\\sin (\\frac{n\\pi x}{L}), \\alpha = 0.4, n = 1, L = 1"
+            },
+            "return": {
+                "ref_func": "a function object, which is used to define the reference solution",
+                "ref_code": "def ref_func(x):\n    alpha = 0.4\n    n = 1\n    L = 1\n    return np.exp(-n**2 * np.pi**2 * alpha * x[:, 1:2] / L**2) * np.sin(n * np.pi * x[:, 0:1] / L)"
+            }
+        },
+        {
+            "step": "3",
+            "tool_name": "define_domain",
+            "parameters": {
+                "geom_type": "Interval",
+                "geom_range": [0, 1],
+                "is_time_dependent": true,
+                "time_range": [0, 1]
+            },
+            "return": {
+                "geomtime": "a GeometryXTime object, which is used to define the domain and time"
+            }
+        },
+        {
+            "step":"4",
+            "tool_name": "define_initial_condition",
+            "parameters":{
+                "geomtime": "a GeometryXTime object at Step_3_1",
+                "ic_description":"This is a time-dependent one-dimensional PDE problem with a spatial range of [0, 1], a time range of [0, 1], and an initial condition of u(x,0) = \\sin (\\frac{n\\pi x}{L}), n = 1, L = 1"
+            },
+            "return": {
+                "ic":"a list of initial condition objects, which is used to define the initial condition",
+                "ic_code":"def func(X):\n    return np.sin(np.pi * X[:, 0:1])\ninitial = lambda _, on_initial: on_initial\nic1 = dde.icbc.IC(geomtime, func, initial)"
+            }
+        },
+        {
+            "step":"5",
+            "tool_name": "define_boundary_condition",
+            "parameters":{
+                "geomtime": "a GeometryXTime object at Step_3_1",
+                "bc_description": "This is a time-dependent one-dimensional PDE problem with a spatial range of [-\\pi,\\pi], a time range of [0, 1], and a boundary condition of u(-\\pi,t) = u(\\pi,t) = 0"
+            },
+            "return":{
+                "bc":"a list of boundary condition objects, which is used to define the boundary condition",
+                "bc_code":"def func(x):\n    return 0\n\ndef boundary_left(x, on_boundary):\n    return on_boundary and dde.utils.isclose(x[0], 0)\n\ndef boundary_right(x, on_boundary):\n    return on_boundary and dde.utils.isclose(x[0], 1)\n\nbc1 = dde.icbc.DirichletBC(geomtime, func, boundary_left)\nbc2 = dde.icbc.DirichletBC(geomtime, func, boundary_right)"
+            }
+        },
+        {
+            "step":"6",
+            "tool_name": "create_training_data",
+            "parameters":{
+                "geomtime": "a GeometryXTime object at Step_3_1",
+                "pde_func": "a function object at Step_1_1",
+                "num_domain": 2540,
+                "num_boundary": 100,
+                "num_initial": 100,
+                "num_test": 2540,
+                "bc": "a list of boundary condition objects at Step_5_1",
+                "ic": "a list of initial condition objects at Step_4_1",
+                "ref_func": "a function object at Step_2_1",
+                "is_time_dependent": true
+            },
+            "return":{
+                "data": "a dde.data.pde.TimePDE object, which is used to generate the training data for the model training"
+            }
+        },
+        {
+            "step":"7",
+            "tool_name": "create_network",
+            "parameters":{
+                "input_dim": 2,
+                "output_dim": 1,
+                "hidden_layers": [20,20,20]
+            },
+            "return":{
+                "net": "a deepxde.nn.pytorch.fnn.FNN object, which is used to define the neural network structure"
+            }
+        },
+        {
+            "step":"8",
+            "tool_name": "train_model",
+            "parameters":{
+                "data": "a dde.data.pde.TimePDE object at Step_5_1",
+                "net": "a deepxde.nn.pytorch.fnn.FNN object at Step_6_1",
+                "iterations": 20000,
+                "metrics": ["l2 relative error"]
+            },
+            "return":{
+                "model":"a deepxde.model.Model object, which includes the neural network and training data",
+                "losshistory": "a deepxde.model.LossHistory object, which records the training loss and testing loss",
+                "train_state": "a deepxde.model.TrainState object, which records the training state information"
+            }
+        },
+        {
+            "step":"9",
+            "tool_name": "train_model_LBFGS",
+            "parameters":{
+                "model": "a deepxde.model.Model object at Step_8_1",
+                "metrics": ["l2 relative error"]
+            },
+            "return":{
+                "model":"a deepxde.model.Model object, which includes the neural network and training data",
+                "losshistory": "a deepxde.model.LossHistory object, which records the training loss and testing loss",
+                "train_state": "a deepxde.model.TrainState object, which records the training state information"
+            }
+        },
+        {
+            "step":"10",
+            "tool_name": "visualize_and_save",
+            "parameters":{
+                "loss_history": "a deepxde.model.LossHistory object at Step_9_2",
+                "train_state": "a deepxde.model.TrainState object at Step_9_3",
+                "is_save": true,
+                "is_plot": true
+            },
+            "return":{
+            }
+        }
+    ],
+    "expected_results": {
+        "train_loss_threshold": 1e-5,
+        "test_loss_threshold": 1e-5,
+        "test_metric_threshold": 5e-3
+    }
+}

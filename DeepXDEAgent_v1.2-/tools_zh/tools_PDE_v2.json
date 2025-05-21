@@ -1,0 +1,269 @@
+[
+  {
+    "name": "define_pde",
+    "description": "利用deepxde库函数来定义PDE方程残差，返回一个pde函数对象function，以及对应的PDE函数代码字符串",
+    "parameters":
+    {
+      "equation": {"type":"str", "description": "LaTex格式的PDE方程表达式，表达式中不能有未知数或者未知函数"}
+    }
+  },
+  {
+    "name": "define_reference_solution",
+    "description": "定义PDE的参考解，返回一个参考解函数对象function，以及对应的参考解定义代码字符串",
+    "parameters":
+    {
+      "solution": {"type":"str", "description": "LaTex格式的参考解表达式，表达式中不能有未知数或者未知函数"}
+    }
+  },
+  {
+    "name": "define_domain",
+    "description": "定义PDE的空间和时间范围（如果是时间依赖的PDE），返回一个deepxde.geometry.timedomain.GeometryXTime对象（如果是时间依赖的PDE）或者dde.geometry.Interval、dde.geometry.Rectangle、dde.geometry.Polygon、dde.geometry.Disk、dde.geometry.Ellipse、dde.geometry.Triangle、dde.geometry.Cuboid、dde.geometry.Sphere、dde.geometry.Hypercube、dde.geometry.Hypersphere对象（如果不是时间依赖）",
+    "parameters":
+    {
+      "geom_type":
+      {
+        "type": "str",
+        "description": "空间区域的类型，需要根据具体的空间区域来定义，包括Interval（一维区间）、Rectangle（二维矩形）、Polygon（二维多边形）、Disk（二维圆盘）、Ellipse（二维椭圆）、Triangle（二维三角形）、Cuboid（三维立方体）、Sphere（三维球体）、Hypercube（高维超立方体）、Hypersphere（高维超球体）"
+      },
+      "geom_range":
+      {
+        "type": "list",
+        "description": "空间区域的范围，参数类型为列表。如果空间区域类型为Interval，则列表包含两个元素，第一个元素为左端点，第二个元素为右端点；如果空间区域类型为Rectangle，列表也包含两个元素，第一个元素为左下角坐标，第二个元素为右上角坐标；如果空间区域类型为Polygon，则列表包含多个元素，每个元素是一个二维坐标，按照顺时针或者逆时针的顺序连接起来即可得到这个多边形区域边界；"
+      },
+      "is_time_dependent":
+      {
+        "type": "bool",
+        "description": "该PDE是否是时间依赖的，如果是，该参数设置为True，且需要定义时间范围。默认为False"
+      },
+      "time_range":
+      {
+        "type": "list",
+        "description": "当is_time_dependent为True时，需要定义时间范围，参数类型为列表，包含两个元素，第一个元素为起始时间，第二个元素为终止时间。默认为None"
+      }
+    }
+  },
+  {
+    "name": "define_initial_condition",
+    "description": "定义PDE的初始条件。只有当PDE是时间依赖的时候才需要定义初始条件，返回一个列表以及相应的定义初始条件python代码，列表里的每一个元素都是deepxde.icbc.IC对象或者deepxde.icbc.OperatorBC对象，代表不同初始条件的定义",
+    "parameters":
+    {
+      "geomtime":
+      {
+        "type": "deepxde.geometry.timedomain.GeometryXTime对象",
+        "description": "PDE方程的空间范围和时间范围，如果需要定义初始条件说明PDE是时间依赖的，则geomtime一定是deepxde.geometry.timedomain.GeometryXTime对象"
+      },
+      "ic_description":
+      {
+        "type": "str",
+        "description": "PDE问题中与初始条件相关的描述信息，由于用到这个工具的必然是时间依赖PDE求解问题，所以描述信息中需要说明PDE方程的空间维数及几何范围、时间范围、初始时刻的取值或者导数取值，数学表达式请用LaTeX格式。"
+      }
+    }
+  },
+  {
+    "name": "define_boundary_condition",
+    "description": "定义PDE方程的边界条件，可以处理Dirichlet边界条件和Neumann边界条件。返回一个列表以及相应的定义边界条件python代码，列表里的每一个元素都是deepxde.icbc.DirichletBC对象或者deepxde.icbc.NeumannBC对象，代表不同边界上的边界条件",
+    "parameters":
+    {
+      "geomtime":
+      {
+        "type": "deepxde.geometry.timedomain.GeometryXTime对象或者dde.geometry.Interval、dde.geometry.Rectangle、dde.geometry.Polygon、dde.geometry.Disk、dde.geometry.Ellipse、dde.geometry.Triangle、dde.geometry.Cuboid、dde.geometry.Sphere、dde.geometry.Hypercube、dde.geometry.Hypersphere对象（如果不是时间依赖PDE）",
+        "description": "PDE方程的空间范围和时间范围（如果时间依赖才有时间范围）"
+      },
+      "bc_description":
+      {
+        "type": "str",
+        "description": "PDE问题中与边界条件相关的描述信息，描述信息中需要包括PDE方程是否时间依赖、涉及的空间维度，几何边界范围、不同边界上的边界条件类型和边界上的取值（Dirichlet型）或法向导数取值（Neumann型），数学表达式请用LaTeX格式"
+      }
+    }
+  },
+  {
+    "name": "create_training_data",
+    "description": "创建后续训练网络所需要的数据，返回一个dde.data.pde.TimePDE对象（如果是时间依赖PDE）或者dde.data.pde.PDE对象（如果不是时间依赖PDE）",
+    "parameters":
+    {
+      "geomtime":
+      {
+        "type": "deepxde.geometry.timedomain.GeometryXTime对象（如果时间依赖）或者dde.geometry.Interval、dde.geometry.Rectangle、dde.geometry.Polygon、dde.geometry.Disk、dde.geometry.Ellipse、dde.geometry.Triangle、dde.geometry.Cuboid、dde.geometry.Sphere、dde.geometry.Hypercube、dde.geometry.Hypersphere对象（如果空间依赖）",
+        "description": "PDE方程的空间范围和时间范围（如果时间依赖）"
+      },
+      "pde_func":
+      {
+        "type":"function",
+        "description":"定义的PDE方程函数对象"
+      },
+      "num_domain":
+      {
+        "type": "int",
+        "description": "区域内部采样点的数量，根据实际情况和问题的复杂程度调整。如果问题很简单，采样点数的数量级为10^2；如果问题复杂，采样点的数量为10^3~10^4。"
+      },
+      "num_boundary":
+      {
+        "type": "int",
+        "description": "边界上采样点数量，根据实际情况调整，一般比num_domain低一个数量级。但是当实际问题的边界条件比较复杂时应当将边界采样点数设置得更大一点。默认为100"
+      },
+      "num_initial":
+      {
+        "type": "int",
+        "description": "只有当PDE是时间依赖的时，才需要定义初始时刻采样点数量，根据实际情况调整，一般比num_domain低一个数量级。但是当实际问题得边界条件比较复杂，特别是涉及到了求导的初始条件时应当将初始时刻的采样点数设置得大一点。默认为100"
+      },
+      "num_test":
+      {
+        "type": "int",
+        "description": "测试时的采样点数量，只有当定义了参考解时才需要定义，根据实际情况调整，一般和num_domain相当。默认为None"
+      },
+      "bc":
+      {
+        "type": "list",
+        "description": "定义好的边界条件对象列表，列表里的每一个元素都是deepxde.icbc.DirichletBC对象或者deepxde.icbc.NeumannBC对象，代表不同边界上的边界条件。"
+      },
+      "ic":
+      {
+        "type": "list",
+        "description": "定义好的初始条件对象列表，列表里的每一个元素都是deepxde.icbc.IC对象或者deepxde.icbc.OperatorBC对象，代表不同初始条件的定义。当PDE是时间依赖的时，即is_time_dependent为True时才需要定义初始条件对象。默认为None"
+      },
+      "ref_func":
+      {
+        "type": "function",
+        "description": "定义的参考解函数对象，只有当定义了参考解时才需要定义。默认为None"
+      },
+      "is_time_dependent":
+      {
+        "type": "bool",
+        "description": "表明该PDE是否是时间依赖的布尔值。默认为False"
+      }
+    }
+  },
+  {
+    "name": "create_network",
+    "description": "创建一个神经网络来拟合PDE，返回一个全连接神经网络deepxde.nn.pytorch.fnn.FNN对象，一般情况下全连接神经网络可以求解大多数PDE求解问题",
+    "parameters":
+    {
+      "input_dim":
+      {
+        "type": "int",
+        "description": "神经网络的输入维度，等于空间维度加上时间维度，空间维度可能是1、2、3维（取决于空间变量），时间维度可能是0、1维（取决于是否依赖时间）"
+      },
+      "output_dim":
+      {
+        "type": "int",
+        "description": "神经网络的输出维度，PDE方程中因变量的维度，根据PDE方程表达式确定，可能是1、2、3维，一般等于1"
+      },
+      "hidden_layers":
+      {
+        "type": "list",
+        "description": "神经网络的隐藏层或中间层，列表的长度表示隐藏层的数量，每个元素表示该层神经元的数量。可以参考设为[M]*N，M是每层神经元的数量，N是隐藏层的数量。M一般设为32、48、64，根据问题复杂度和训练数据的多少来确定；N根据训练数据采样点数调整，如果训练数据多则可以设为6，如果训练数据少设为3"
+      },
+      "activation":
+      {
+        "type": "str",
+        "description": "神经网络的激活函数，默认为\"tanh\""
+      },
+      "initializer":
+      {
+        "type": "str",
+        "description": "神经网络参数的初始化方式，默认为\"Glorot uniform\""
+      }
+    }
+  },
+  {
+    "name": "train_model",
+    "description": "训练模型的初始阶段，使用Adam优化器进行训练，返回deepxde.model.Model对象、deepxde.model.LossHistory对象、deepxde.model.TrainState对象，分别是训练后的模型、训练过程的损失函数值、训练状态信息。这个工具用于在神经网络训练初期快速收敛，找到一个较优的参数初始化，可作为后续 L-BFGS 精调的预训练阶段",
+    "parameters":
+    {
+      "data":
+      {
+        "type": "deepxde.data.pde.TimePDE对象或者deepxde.data.pde.PDE对象",
+        "description": "定义的训练数据"
+      },
+      "net":
+      {
+        "type": "deepxde.nn.pytorch.fnn.FNN对象",
+        "description": "定义的全连接神经网络"
+      },
+      "optimizer":
+      {
+        "type": "str",
+        "description": "优化算法，默认为\"adam\""
+      },
+      "lr":
+      {
+        "type": "float",
+        "description": "训练时的学习率，默认为1e-3"
+      },
+      "iterations":
+      {
+        "type": "int",
+        "description": "训练的迭代次数，默认为15000。如果问题比较复杂，比如PDE的形式复杂，可以设成20000甚至更大，如果比较简单可以设为10000"
+      },
+      "metrics":
+      {
+        "type": "list",
+        "description": "训练时评测指标，只有定义了参考解时才需要定义，此时设置为['l2 relative error']。默认为None"
+      },
+      "resample":
+      {
+        "type": "bool",
+        "description": "训练时是否重采样数据，设为True可以提高训练精度，减少过拟合。一般当PDE的复杂度比较高，数据量比较少时，可以设为True。默认为False"
+      },
+      "period":
+      {
+        "type": "int",
+        "description": "当resample为True时，定义重采样周期，一般选择10、100或者1000，默认为None"
+      }
+    }
+  },
+  {
+    "name": "train_model_LBFGS",
+    "description":"使用L-BFGS-B优化器对模型进行精细化训练，适用于解平滑的 PDE 问题，能显著提升解的精度，一般在train_network之后，也就是在 Adam 训练过后的基础上进一步降低损失，当需要进一步提升解的精度时使用，尤其是在PDE解较为平滑时。返回deepxde.model.Model对象、deepxde.model.LossHistory对象、deepxde.model.TrainState对象，分别是训练后的模型、训练过程的损失函数值、训练状态信息。注意该工具不能作为初始训练阶段使用，因对初始权重敏感",
+    "parameters":
+    {
+      "model":
+      {
+        "type": "dde.model.Model对象",
+        "description": "训练好的模型"
+      },
+      "metrics":
+      {
+        "type": "list",
+        "description": "训练时评测指标，只有定义了参考解时才需要定义，此时设置为['l2 relative error']。默认为None"
+      },
+      "resample":
+      {
+        "type": "bool",
+        "description": "训练时是否重采样数据，设为True可以提高训练精度，减少过拟合。一般当PDE的复杂度比较高，数据量比较少时，可以设为True。默认为False"
+      },
+      "period":
+      {
+        "type": "int",
+        "description": "当resample为True时，定义重采样周期，一般选择10、100或者1000，默认为None"
+      }
+    }
+  },
+  {
+    "name": "visualize_and_save",
+    "description": "可视化训练过程并且保存训练过程的相关数据。如果is_save为True，则保存训练过程的相关数据到当前路径；如果is_plot为True，则可视化训练过程，返回两个图片对象matplotlib.figure.Figure，分别是训练过程的损失函数值变化图和最好模型的解图。",
+    "parameters":
+    {
+      "loss_history":
+      {
+        "type": "deepxde.model.LossHistory对象",
+        "description": "训练过程的损失函数"
+      },
+      "train_state":
+      {
+        "type": "deepxde.model.TrainState对象",
+        "description": "训练后的状态信息"
+      },
+      "is_save":
+      {
+        "type": "bool",
+        "description": "如果为True，则保存训练过程的相关数据。默认为True"
+      },
+      "is_plot":
+      {
+        "type": "bool",
+        "description": "如果为True，则可视化训练过程。默认为True"
+      }
+    }
+  }
+]

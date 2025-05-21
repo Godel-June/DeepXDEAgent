@@ -1,0 +1,131 @@
+eval1.json: 'I would like to solve the following Allen-Cahn equation: \frac{\partial
+  u}{\partial t} = d\frac{\partial^2 u}{\partial x^2} + 5(u - u^3)
+
+  where d=0.01
+
+  The computational geometry domain is [-1,1], and the time domain is [0,1]
+
+  The initial condition u(x,0) = x^2\cos(\pi x)
+
+  The Dirichlet boundary condition u(-1,t) = u(1,t) = -1'
+eval2.json: 'I would like to solve the following Burgers equation: \frac{\partial
+  u}{\partial t} + u\frac{\partial u}{\partial x} = \nu\frac{\partial^2 u}{\partial
+  x^2}
+
+  where \nu=0.01
+
+  The computational geometry domain is [-1,1], and the time domain is [0,1]
+
+  The initial condition u(x,0) = -\sin(\pi x)
+
+  The Dirichlet boundary condition u(-1,t) = u(1,t) = 0
+
+  others: The equation has no analytical solution. Use normal training epochs and
+  data sampling points, and employ the L-BFGS optimizer for further optimization.'
+eval3.json: 'I would like to solve the following Burgers equation: \frac{\partial
+  u}{\partial t} + u\frac{\partial u}{\partial x} = \nu\frac{\partial^2 u}{\partial
+  x^2}
+
+  where \nu=0.01
+
+  The computational geometry domain is [-1,1], and the time domain is [0,1]
+
+  The initial condition u(x,0) = -\sin(\pi x)
+
+  The Dirichlet boundary condition u(-1,t) = u(1,t) = 0
+
+  The equation has no analytical solution. Use standard training epochs and sampling
+  points, with L-BFGS optimizer for further optimization. Enable resampling during
+  training with a resampling period of 100.'
+eval4.json: 'I would like to solve the following heat equation: \frac{\partial u}{\partial
+  t} = \frac{\partial^2 u}{\partial x^2} - e^{-t}(\sin(\pi x) - \pi^2 \sin(\pi x))
+
+  where no additional parameters are needed
+
+  The computational geometry domain is [-1,1], and the time domain is [0,1]
+
+  The initial condition u(x,0) = \sin(\pi x)
+
+  The Dirichlet boundary condition u(-1,t) = u(1,t) = 0
+
+  The reference solution is u = e^{-t} \sin(\pi x)
+
+  Only the Adam optimizer is required for training, without L-BFGS fine-tuning'
+eval5.json: 'I would like to solve the following heat equation: \frac{\partial u}{\partial
+  t} = \frac{\partial^2 u}{\partial x^2} - e^{-t}(\sin(\pi x) - \pi^2 \sin(\pi x))
+
+  where no additional parameters are needed
+
+  The computational geometry domain is [-1,1], and the time domain is [0,1]
+
+  The initial condition u(x,0) = \sin(\pi x)
+
+  The Dirichlet boundary condition u(-1,t) = u(1,t) = 0
+
+  The reference solution is u = e^{-t} \sin(\pi x)
+
+  Training configuration: Use Adam optimizer only (no L-BFGS fine-tuning), enable
+  resampling with resampling period=100'
+eval6.json: 'I would like to solve the following heat equation: \frac{\partial u}{\partial
+  t} = \frac{\partial^2 u}{\partial x^2} - e^{-t}(\sin(\pi x) - \pi^2 \sin(\pi x))
+
+  where no additional parameters are specified
+
+  The computational geometry domain is [-1,1], and the time domain is [0,1]
+
+  The initial condition u(x,0) = \sin(\pi x)
+
+  The Dirichlet boundary condition u(-1,t) = u(1,t) = 0
+
+  The reference solution is u = e^{-t} \sin(\pi x)
+
+  Please use the L-BFGS optimizer for fine-tuning'
+eval7.json: 'I would like to solve the following diffusion reaction equation: \frac{\partial
+  y}{\partial t} = \frac{\partial^2 y}{\partial x^2} + e^{-t} \left(3\frac{\sin{2x}}{2}
+  + \frac{8\sin{3x}}{3} + \frac{15\sin{4x}}{4} + \frac{63\sin{8x}}{8}\right)
+
+  where the computational geometry domain is $x \in [-\pi, \pi]$, and the time domain
+  is $t \in [0, 1]$
+
+  The initial condition $y(x, 0) = \sin{x} + \frac{\sin{2x}}{2} + \frac{\sin{3x}}{3}
+  + \frac{\sin{4x}}{4} + \frac{\sin{8x}}{8}$
+
+  The Dirichlet boundary condition $y(t, -\pi) = y(t, \pi) = 0$
+
+  The exact solution is $y(x, t) = e^{-t}\left( \sin{x} + \frac{\sin{2x}}{2} + \frac{\sin{3x}}{3}
+  + \frac{\sin{4x}}{4} + \frac{\sin{8x}}{8}\right)$
+
+  Do not use the L-BFGS optimizer, and set the training epochs to a higher number.'
+eval8.json: 'I would like to solve the following heat equation: \frac{\partial u}{\partial
+  t}=\alpha \frac{\partial^2 u}{\partial x^2}
+
+  where \alpha=0.4
+
+  The computational geometry domain is [-1,1], and the time domain is [0,1]
+
+  The initial condition u(x,0) = \sin (\frac{n\pi x}{L})
+
+  The Dirichlet boundary condition u(-1,t) = u(1,t) = 0
+
+  The analytical solution is u(x,t) = e^{\frac{-n^2\pi^2 \alpha t}{L^2}}\sin (\frac{n\pi
+  x}{L})
+
+  The parameters are L=1, n=1
+
+  Please use the L-BFGS optimizer and apply resampling during training with a resampling
+  period of 10.'
+eval9.json: 'I would like to solve the following heat equation: \frac{\partial u}{\partial
+  t}=\alpha \frac{\partial^2 u}{\partial x^2}
+
+  where \alpha=0.4
+
+  The computational geometry domain is [0,1], and the time domain is [0,1]
+
+  The initial condition u(x,0) = \sin (\frac{n\pi x}{L})
+
+  The Dirichlet boundary condition u(0,t) = u(1,t) = 0
+
+  The analytical solution is u(x,t) = e^{\frac{-n^2\pi^2 \alpha t}{L^2}}\sin (\frac{n\pi
+  x}{L}) with L=1 and n=1
+
+  Please use the L-BFGS optimizer.'
