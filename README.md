@@ -1,8 +1,7 @@
 # DeepXDEAgent
 
-**DeepXDEAgent** 是一个基于 [DeepXDE](https://github.com/lululxvi/deepxde) 的自动化 PDE 求解工具，旨在简化偏微分方程（PDE）建模、训练与求解的流程。
+**DeepXDEAgent** 是一个基于 [DeepXDE](https://github.com/lululxvi/deepxde) 的自动化 PDE 求解工具调用智能体，旨在自动化偏微分方程（PDE）建模、训练与求解的流程。
 
-本项目封装了 DeepXDE 的核心功能，提供更加模块化和易于扩展的接口，适合用于自动建模系统或科学计算 Agent 的底层组件。
 
 ## 关于 DeepXDE
 
